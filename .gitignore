@@ -1,0 +1,10 @@
+# Security Exclusions
+.env
+data/*.db
+data/*.sqlite
+storage/private_documents/*
+!storage/private_documents/.gitkeep
+server_venv/
+__pycache__/
+*.pyc
+*.log

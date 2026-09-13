@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>บุคลากร | คณะเทคโนโลยีสารสนเทศ</title>
+  <meta name="description" content="บุคลากรคณะเทคโนโลยีสารสนเทศ สาขาวิทยาการคอมพิวเตอร์ เทคโนโลยีสารสนเทศ และวิทยาการมัลติมีเดียปัญญาประดิษฐ์">
+  <meta name="keywords" content="บุคลากร, อาจารย์, คณะเทคโนโลยีสารสนเทศ, CS, IT, MSI">
+
+  <meta property="og:title" content="บุคลากร | คณะเทคโนโลยีสารสนเทศ">
+  <meta property="og:description" content="บุคลากรคณะเทคโนโลยีสารสนเทศ 3 สาขาวิชา">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="th_TH">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%232563eb'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='18' font-weight='bold'>IT</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ========================================
+       Staff Page Specific Styles
+       ======================================== */
+
+    /* Page Hero */
+    .page-hero {
+      background: linear-gradient(160deg, var(--navy) 0%, var(--dark-blue) 50%, #0a3d6b 100%);
+      padding: 120px 0 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+
+    .page-hero::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(6,182,212,0.08), transparent 70%);
+      pointer-events: none;
+    }
+
+    .page-hero .container {
+      position: relative;
+      z-index: 2;
+    }
+
+    .page-hero .section-badge {
+      background: rgba(6,182,212,0.15);
+      color: #22d3ee;
+      border-color: rgba(6,182,212,0.3);
+    }
+
+    .page-hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+
+    .page-hero p {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.65);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.8;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      font-size: 0.88rem;
+    }
+
+    .breadcrumb a {
+      color: rgba(255,255,255,0.5);
+    }
+
+    .breadcrumb a:hover {
+      color: var(--light-cyan);
+    }
+
+    .breadcrumb span {
+      color: rgba(255,255,255,0.3);
+    }
+
+    .breadcrumb .current {
+      color: var(--light-cyan);
+    }
+
+    /* Department Tabs */
+    .dept-tabs-wrapper {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      position: sticky;
+      top: 72px;
+      z-index: 99;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .dept-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 12px 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .dept-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .dept-tab {
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      background: transparent;
+      color: var(--gray-600);
+      border: 2px solid transparent;
+      white-space: nowrap;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .dept-tab:hover {
+      background: rgba(37,99,235,0.05);
+      color: var(--royal-blue);
+    }
+
+    .dept-tab.active {
+      background: var(--royal-blue);
+      color: var(--white);
+      border-color: var(--royal-blue);
+    }
+
+    .dept-tab .tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 8px;
+      padding: 0 6px;
+    }
+
+    .dept-tab.active .tab-count {
+      background: rgba(255,255,255,0.25);
+      color: var(--white);
+    }
+
+    .dept-tab:not(.active) .tab-count {
+      background: var(--gray-100);
+      color: var(--gray-500);
+    }
+
+    /* Department Section */
+    .dept-section {
+      display: none;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .dept-section.active {
+      display: block;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Department Header */
+    .dept-header {
+      text-align: center;
+      padding: 48px 0 12px;
+    }
+
+    .dept-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 16px;
+    }
+
+    .dept-cs .dept-icon { background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(6,182,212,0.12)); }
+    .dept-it .dept-icon { background: linear-gradient(135deg, rgba(6,182,212,0.12), rgba(52,211,153,0.12)); }
+    .dept-msi .dept-icon { background: linear-gradient(135deg, rgba(129,140,248,0.12), rgba(244,114,182,0.12)); }
+
+    .dept-header h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .dept-header .dept-en {
+      font-size: 0.92rem;
+      color: var(--gray-400);
+      margin-bottom: 8px;
+    }
+
+    .dept-header p {
+      font-size: 0.95rem;
+      color: var(--gray-500);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Staff Grid */
+    .staff-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 28px;
+      padding: 32px 0 60px;
+    }
+
+    /* Staff Card */
+    .staff-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .staff-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-xl);
+      border-color: rgba(37,99,235,0.15);
+    }
+
+    /* Photo area */
+    .staff-photo-wrapper {
+      position: relative;
+      padding: 0;
+      display: block;
+      background-color: var(--white);
+    }
+
+    .staff-photo {
+      width: 100%;
+      height: 350px;
+      border-radius: 0;
+      margin: 0;
+      overflow: hidden;
+      border: none;
+      position: relative;
+      background: var(--gray-100);
+      transition: var(--transition);
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .staff-card:hover .staff-photo {
+      opacity: 0.95;
+    }
+
+    .staff-photo img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .staff-card:hover .staff-photo img {
+      transform: scale(1.05);
+    }
+
+    /* Placeholder avatar */
+    .staff-avatar-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.2rem;
+      background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+    }
+
+    .dept-cs .staff-avatar-placeholder { background: linear-gradient(135deg, #dbeafe, #e0f2fe); }
+    .dept-it .staff-avatar-placeholder { background: linear-gradient(135deg, #cffafe, #d1fae5); }
+    .dept-msi .staff-avatar-placeholder { background: linear-gradient(135deg, #e0e7ff, #fce7f3); }
+
+    /* Position badge */
+    .staff-position-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .badge-head {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      color: #92400e;
+    }
+
+    .badge-lecturer {
+      background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(6,182,212,0.1));
+      color: var(--royal-blue);
+    }
+
+    .badge-support {
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+
+    /* Staff Info */
+    .staff-info {
+      padding: 16px 20px 24px;
+    }
+
+    .staff-info h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 2px;
+      line-height: 1.4;
+    }
+
+    .staff-info .staff-title {
+      font-size: 0.82rem;
+      color: var(--royal-blue);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .staff-info .staff-education {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .staff-info .staff-expertise {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .staff-info .expertise-tag {
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      background: var(--gray-50);
+      color: var(--gray-600);
+      border: 1px solid var(--gray-200);
+    }
+
+    .staff-contact-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .staff-contact-link {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      transition: var(--transition);
+    }
+
+    .staff-contact-link:hover {
+      background: var(--royal-blue);
+      color: var(--white);
+      border-color: var(--royal-blue);
+      transform: translateY(-2px);
+    }
+
+    /* Staff summary stats */
+    .staff-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 700px;
+      margin: 0 auto 20px;
+    }
+
+    .staff-summary-card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .staff-summary-card .number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--light-cyan);
+    }
+
+    .staff-summary-card .label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+      margin-top: 4px;
+    }
+
+    /* ========================================
+       Responsive
+       ======================================== */
+    
+
+    @media (max-width: 1024px) {
+      .staff-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .page-hero h1 {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-hero {
+        padding: 100px 0 60px;
+      }
+
+      .page-hero h1 {
+        font-size: 1.8rem;
+      }
+
+      .staff-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .staff-summary {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .staff-summary-card .number {
+        font-size: 1.6rem;
+      }
+
+      .dept-tabs {
+        gap: 4px;
+        padding: 10px 0;
+      }
+
+      .dept-tab {
+        padding: 10px 18px;
+        font-size: 0.82rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-hero {
+        padding: 90px 0 48px;
+      }
+
+      .page-hero h1 {
+        font-size: 1.5rem;
+      }
+
+      .staff-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .staff-summary {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+      }
+
+      .staff-summary-card {
+        padding: 14px 8px;
+      }
+
+      .staff-summary-card .number {
+        font-size: 1.3rem;
+      }
+
+      .staff-summary-card .label {
+        font-size: 0.75rem;
+      }
+
+      .dept-tab {
+        padding: 8px 14px;
+        font-size: 0.78rem;
+      }
+
+      .dept-tab .tab-count {
+        min-width: 20px;
+        height: 20px;
+        font-size: 0.68rem;
+        margin-left: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================
+       Header / Navbar
+       ======================================== -->
+  <header class="header" role="banner">
+    <div class="container">
+      <a href="index.html" class="header-logo" aria-label="หน้าแรก คณะเทคโนโลยีสารสนเทศ">
+        <div class="logo-icon" aria-hidden="true">IT</div>
+        <div class="logo-text">
+          <h1>คณะเทคโนโลยีสารสนเทศ</h1>
+          <span>Faculty of Information Technology</span>
+        </div>
+      </a>
+
+      <nav class="nav-menu" id="navMenu" role="navigation" aria-label="เมนูหลัก">
+        <a href="index.html">หน้าแรก</a>
+        <a href="index.html#why-us">เกี่ยวกับคณะ</a>
+        <a href="index.html#programs">หลักสูตร</a>
+        <a href="index.html#news">ข่าวสาร</a>
+        <a href="index.html#activities">กิจกรรม</a>
+        <a href="staff.html" class="active">บุคลากร</a>
+        <a href="index.html#statistics">วิจัย</a>
+        <a href="index.html#contact">ติดต่อเรา</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a href="index.html#admission" class="btn btn-primary" aria-label="สมัครนักศึกษาใหม่">สมัครนักศึกษาใหม่</a>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="เปิดเมนู" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-nav-overlay" id="mobileOverlay" aria-hidden="true"></div>
+
+  <!-- ========================================
+       Page Hero
+       ======================================== -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">หน้าแรก</a>
+        <span>›</span>
+        <span class="current">บุคลากร</span>
+      </div>
+      <div class="section-badge">👥 บุคลากร</div>
+      <h1>บุคลากรคณะเทคโนโลยีสารสนเทศ</h1>
+      <p>อาจารย์และบุคลากรผู้เชี่ยวชาญ พร้อมดูแลและสนับสนุนการเรียนรู้ของนักศึกษาทุกคน</p>
+
+      <div class="staff-summary" style="margin-top:36px;">
+        <div class="staff-summary-card">
+          <div class="number">3</div>
+          <div class="label">สาขาวิชา</div>
+        </div>
+        <div class="staff-summary-card">
+          <div class="number">15</div>
+          <div class="label">อาจารย์ประจำ</div>
+        </div>
+        <div class="staff-summary-card">
+          <div class="number">3</div>
+          <div class="label">เจ้าหน้าที่สนับสนุน</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       Department Tabs
+       ======================================== -->
+  <div class="dept-tabs-wrapper">
+    <div class="container">
+      <div class="dept-tabs" role="tablist" aria-label="เลือกสาขาวิชา">
+        <button class="dept-tab active" role="tab" aria-selected="true" aria-controls="dept-all" data-dept="all">
+          ทั้งหมด<span class="tab-count">18</span>
+        </button>
+        <button class="dept-tab" role="tab" aria-selected="false" aria-controls="dept-cs" data-dept="cs">
+          🧮 วิทยาการคอมพิวเตอร์ (CS)<span class="tab-count">6</span>
+        </button>
+        <button class="dept-tab" role="tab" aria-selected="false" aria-controls="dept-it" data-dept="it">
+          💻 เทคโนโลยีสารสนเทศ (IT)<span class="tab-count">6</span>
+        </button>
+        <button class="dept-tab" role="tab" aria-selected="false" aria-controls="dept-msi" data-dept="msi">
+          🤖 วิทยาการมัลติมีเดียปัญญาประดิษฐ์ (MSI)<span class="tab-count">6</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================
+       Staff Content Area
+       ======================================== -->
+  <main class="section" style="padding-top:20px;background:var(--gray-50);">
+    <div class="container">
+
+      <!-- ======== ALL ======== -->
+      <div class="dept-section active" id="dept-all" role="tabpanel">
+
+        <!-- CS in All -->
+        <div class="dept-cs">
+          <div class="dept-header">
+            <div class="dept-icon">🧮</div>
+            <h2>สาขาวิทยาการคอมพิวเตอร์</h2>
+            <p class="dept-en">Computer Science (CS)</p>
+            <p>ศึกษาวิจัยด้านอัลกอริทึม โครงสร้างข้อมูล ระบบปฏิบัติการ และปัญญาประดิษฐ์</p>
+          </div>
+          <div class="staff-grid" id="grid-all-cs"></div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--gray-200);margin:20px 0 0;">
+
+        <!-- IT in All -->
+        <div class="dept-it">
+          <div class="dept-header">
+            <div class="dept-icon">💻</div>
+            <h2>สาขาเทคโนโลยีสารสนเทศ</h2>
+            <p class="dept-en">Information Technology (IT)</p>
+            <p>ประยุกต์ใช้เทคโนโลยีสารสนเทศเพื่อพัฒนาระบบงานและบริหารจัดการองค์กร</p>
+          </div>
+          <div class="staff-grid" id="grid-all-it"></div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--gray-200);margin:20px 0 0;">
+
+        <!-- MSI in All -->
+        <div class="dept-msi">
+          <div class="dept-header">
+            <div class="dept-icon">🤖</div>
+            <h2>สาขาวิทยาการมัลติมีเดียปัญญาประดิษฐ์</h2>
+            <p class="dept-en">Multimedia Science and Intelligence (MSI)</p>
+            <p>ผสานศาสตร์มัลติมีเดีย การออกแบบดิจิทัล และปัญญาประดิษฐ์เข้าด้วยกัน</p>
+          </div>
+          <div class="staff-grid" id="grid-all-msi"></div>
+        </div>
+      </div>
+
+      <!-- ======== CS Only ======== -->
+      <div class="dept-section dept-cs" id="dept-cs" role="tabpanel">
+        <div class="dept-header">
+          <div class="dept-icon">🧮</div>
+          <h2>สาขาวิทยาการคอมพิวเตอร์</h2>
+          <p class="dept-en">Computer Science (CS)</p>
+          <p>ศึกษาวิจัยด้านอัลกอริทึม โครงสร้างข้อมูล ระบบปฏิบัติการ และปัญญาประดิษฐ์</p>
+        </div>
+        <div class="staff-grid" id="grid-cs"></div>
+      </div>
+
+      <!-- ======== IT Only ======== -->
+      <div class="dept-section dept-it" id="dept-it" role="tabpanel">
+        <div class="dept-header">
+          <div class="dept-icon">💻</div>
+          <h2>สาขาเทคโนโลยีสารสนเทศ</h2>
+          <p class="dept-en">Information Technology (IT)</p>
+          <p>ประยุกต์ใช้เทคโนโลยีสารสนเทศเพื่อพัฒนาระบบงานและบริหารจัดการองค์กร</p>
+        </div>
+        <div class="staff-grid" id="grid-it"></div>
+      </div>
+
+      <!-- ======== MSI Only ======== -->
+      <div class="dept-section dept-msi" id="dept-msi" role="tabpanel">
+        <div class="dept-header">
+          <div class="dept-icon">🤖</div>
+          <h2>สาขาวิทยาการมัลติมีเดียปัญญาประดิษฐ์</h2>
+          <p class="dept-en">Multimedia Science and Intelligence (MSI)</p>
+          <p>ผสานศาสตร์มัลติมีเดีย การออกแบบดิจิทัล และปัญญาประดิษฐ์เข้าด้วยกัน</p>
+        </div>
+        <div class="staff-grid" id="grid-msi"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================
+       Footer
+       ======================================== -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="header-logo">
+            <div class="logo-icon" aria-hidden="true">IT</div>
+            <div class="logo-text">
+              <h1 style="color:#fff;">คณะเทคโนโลยีสารสนเทศ</h1>
+              <span style="color:rgba(255,255,255,0.5);">Faculty of Information Technology</span>
+            </div>
+          </div>
+          <p>มุ่งพัฒนานักศึกษาให้มีความรู้ ทักษะ และความพร้อมสู่โลกเทคโนโลยีและดิจิทัล ด้วยหลักสูตรที่ทันสมัยและการเรียนการสอนที่เน้นภาคปฏิบัติ</p>
+        </div>
+        <div class="footer-col">
+          <h4>เมนู</h4>
+          <ul>
+            <li><a href="index.html">หน้าแรก</a></li>
+            <li><a href="index.html#why-us">เกี่ยวกับคณะ</a></li>
+            <li><a href="index.html#programs">หลักสูตร</a></li>
+            <li><a href="index.html#news">ข่าวสาร</a></li>
+            <li><a href="index.html#activities">กิจกรรม</a></li>
+            <li><a href="staff.html">บุคลากร</a></li>
+            <li><a href="index.html#contact">ติดต่อเรา</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>ติดต่อ</h4>
+          <ul>
+            <li><a href="#">📞 0XX-XXX-XXXX</a></li>
+            <li><a href="#">✉️ info@example.ac.th</a></li>
+            <li><a href="#">📍 จังหวัดตัวอย่าง</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>ช่องทางโซเชียล</h4>
+          <ul>
+            <li><a href="#">📘 Facebook</a></li>
+            <li><a href="#">📷 Instagram</a></li>
+            <li><a href="#">▶️ YouTube</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Faculty of Information Technology. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" id="backToTop" aria-label="กลับด้านบน" title="กลับด้านบน">↑</button>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+      
+      // Select containers
+      const containers = {
+        'all-cs': document.getElementById('grid-all-cs'),
+        'all-it': document.getElementById('grid-all-it'),
+        'all-msi': document.getElementById('grid-all-msi'),
+        'cs': document.getElementById('grid-cs'),
+        'it': document.getElementById('grid-it'),
+        'msi': document.getElementById('grid-msi')
+      };
+
+      // Show loading state
+      for (const id in containers) {
+        if (containers[id]) {
+          containers[id].innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--gray-500);">กำลังโหลดข้อมูลบุคลากร...</div>';
+        }
+      }
+
+      let allStaff = [];
+      try {
+        const res = await fetch('/api/staff');
+        const data = await res.json();
+        if (data.success) {
+          allStaff = data.staff || [];
+        }
+      } catch (e) {
+        console.error('Failed to load staff:', e);
+        for (const id in containers) {
+          if (containers[id]) {
+            containers[id].innerHTML = `
+              <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--danger);">
+                <p style="margin-bottom: 12px;">ไม่สามารถโหลดข้อมูลบุคลากรได้</p>
+                <button onclick="window.location.reload()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">ลองใหม่</button>
+              </div>
+            `;
+          }
+        }
+        return;
+      }
+
+      const staffByDept = {
+        'CS': allStaff.filter(s => s.department === 'CS'),
+        'IT': allStaff.filter(s => s.department === 'IT'),
+        'MSI': allStaff.filter(s => s.department === 'MSI')
+      };
+
+      // Update Summary Counts
+      const sumCS = document.getElementById('sum-cs');
+      const sumIT = document.getElementById('sum-it');
+      const sumMSI = document.getElementById('sum-msi');
+      if(sumCS) sumCS.textContent = staffByDept.CS.length;
+      if(sumIT) sumIT.textContent = staffByDept.IT.length;
+      if(sumMSI) sumMSI.textContent = staffByDept.MSI.length;
+
+      // Update Tab Counts
+      const tabs = document.querySelectorAll('.dept-tab');
+      tabs.forEach(tab => {
+        const dept = tab.getAttribute('data-dept');
+        const countSpan = tab.querySelector('.tab-count');
+        if (countSpan) {
+          if (dept === 'all') {
+            countSpan.textContent = allStaff.length;
+          } else if (staffByDept[dept.toUpperCase()]) {
+            countSpan.textContent = staffByDept[dept.toUpperCase()].length;
+          }
+        }
+      });
+
+      // Card Rendering Function
+      function renderCard(person) {
+        // Fallback for image
+        const imgUrl = person.image_url ? person.image_url : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(person.name) + '&background=e2e8f0&color=64748b&size=200';
+        
+        let subjectsHtml = '';
+        if (person.subjects && person.subjects.length > 0) {
+          const subs = person.subjects.map(sub => `<li>${sub}</li>`).join('');
+          subjectsHtml = `<ul style="list-style: none; padding: 0; margin: 0; font-size: 0.82rem; color: var(--gray-600); line-height: 1.6; text-align: left;">${subs}</ul>`;
+        } else {
+          subjectsHtml = '<div style="font-size: 0.82rem; color: var(--gray-400);">อยู่ระหว่างปรับปรุง</div>';
+        }
+
+        return `
+          <div class="staff-card">
+            <div class="staff-photo-wrapper">
+              <div class="staff-photo">
+                <img src="${imgUrl}" alt="${person.name}" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}&background=e2e8f0&color=64748b&size=200'">
+              </div>
+            </div>
+            <div class="staff-info">
+              <h3 class="staff-name" style="margin-bottom: 8px;">${person.name}</h3>
+              
+              <div style="margin-top: 16px;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; text-align: left;">รายวิชาที่สอน</div>
+                ${subjectsHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderGrid(containerId, people) {
+        const container = containers[containerId];
+        if (!container) return;
+        if (people.length === 0) {
+          container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--gray-400);">ยังไม่มีข้อมูลบุคลากรของสาขานี้</div>';
+          return;
+        }
+        container.innerHTML = people.map(p => renderCard(p)).join('');
+      }
+
+      // Initial render
+      renderGrid('all-cs', staffByDept.CS);
+      renderGrid('all-it', staffByDept.IT);
+      renderGrid('all-msi', staffByDept.MSI);
+      renderGrid('cs', staffByDept.CS);
+      renderGrid('it', staffByDept.IT);
+      renderGrid('msi', staffByDept.MSI);
+
+      // Tab switching
+      const sections = document.querySelectorAll('.dept-section');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+          const dept = this.getAttribute('data-dept');
+
+          // Update tab active state
+          tabs.forEach(t => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          this.classList.add('active');
+          this.setAttribute('aria-selected', 'true');
+
+          // Show corresponding section
+          sections.forEach(s => s.classList.remove('active'));
+          const target = document.getElementById('dept-' + dept);
+          if (target) target.classList.add('active');
+
+          // Scroll to top of content
+          const tabsWrapper = document.querySelector('.dept-tabs-wrapper');
+          if (tabsWrapper) {
+            const headerH = document.querySelector('.header') ? document.querySelector('.header').offsetHeight : 0;
+            const top = tabsWrapper.getBoundingClientRect().top + window.pageYOffset - headerH;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+          }
+        });
+      });
+
+      // Handle query parameter mapping (e.g. ?dept=CS or ?branch=computer-science)
+      const urlParams = new URLSearchParams(window.location.search);
+      let preferred = urlParams.get('dept');
+      const branchParam = urlParams.get('branch');
+      if (branchParam) {
+        if (branchParam === 'computer-science') preferred = 'cs';
+        if (branchParam === 'information-technology') preferred = 'it';
+        if (branchParam === 'multimedia-ai') preferred = 'msi';
+      }
+      
+      if (!preferred) {
+        preferred = sessionStorage.getItem('preferred_dept');
+      }
+
+      if (preferred) {
+        const matchTab = document.querySelector('.dept-tab[data-dept="' + preferred.toLowerCase() + '"]');
+        if (matchTab) {
+          matchTab.click();
+        }
+        sessionStorage.removeItem('preferred_dept');
+      }
+
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายละเอียดผู้สมัคร (ข้อมูลลับ) | คณะเทคโนโลยีสารสนเทศ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      background: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .admin-navbar {
+      background: #0a1628;
+      color: #ffffff;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .main-wrapper {
+      max-width: 1000px;
+      width: 100%;
+      margin: 24px auto 60px;
+      padding: 0 20px;
+      flex: 1;
+    }
+    .back-nav {
+      margin-bottom: 16px;
+    }
+    .back-nav a {
+      color: #2563eb;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .detail-card {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 30px -10px rgba(15, 32, 65, 0.06);
+      padding: 36px;
+      margin-bottom: 24px;
+    }
+    .card-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .confidential-header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f2041;
+      margin: 28px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 24px;
+    }
+    .field-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .field-label {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .field-val {
+      font-size: 0.98rem;
+      color: #0f172a;
+      font-weight: 600;
+    }
+    .btn-unmask {
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-unmask:hover {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    /* Document List */
+    .doc-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .btn-download {
+      background: #2563eb;
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-download:hover {
+      background: #1d4ed8;
+    }
+
+    /* Staff Update Box */
+    .status-select {
+      padding: 10px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      width: 100%;
+      margin-top: 6px;
+    }
+    .notes-textarea {
+      width: 100%;
+      min-height: 90px;
+      padding: 12px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      margin-top: 6px;
+    }
+    .btn-save {
+      background: #059669;
+      color: #ffffff;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 14px;
+      transition: all 0.2s;
+    }
+    .btn-save:hover {
+      background: #047857;
+    }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="admin-navbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="logo-icon" style="width:32px;height:32px;font-size:1rem;">IT</div>
+      <strong>ระบบงานรับสมัครและทะเบียน มรภ.ร้อยเอ็ด</strong>
+    </div>
+    <div style="font-size:0.85rem;">
+      <a href="/admin/dashboard" style="color:#ffffff;text-decoration:none;">← กลับหน้าสรุปผู้สมัคร</a>
+    </div>
+  </nav>
+
+  <main class="main-wrapper">
+    <div class="back-nav">
+      <a href="/admin/dashboard">← กลับสู่รายชื่อผู้สมัคร</a>
+    </div>
+
+    <div class="detail-card">
+      <div class="card-header-bar">
+        <div>
+          <div class="confidential-header-badge">🔒 CONFIDENTIAL • ข้อมูลลับเฉพาะเจ้าหน้าที่</div>
+          <h2 style="font-size:1.6rem;font-weight:800;color:#0a1628;margin:4px 0;" id="appId">กำลังโหลด...</h2>
+          <span style="font-size:0.85rem;color:#64748b;" id="appCreated"></span>
+        </div>
+        <div style="text-align:right;">
+          <span id="statusBadge" style="display:inline-block;padding:6px 18px;border-radius:50px;font-weight:800;font-size:0.9rem;"></span>
+          <div style="margin-top:10px;">
+            <button id="unmaskBtn" class="btn-unmask">
+              👁️ แสดงข้อมูลเต็ม (Unmask)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. ข้อมูลส่วนตัว -->
+      <div class="section-title">👤 1. ข้อมูลส่วนตัว (Personal Information)</div>
+      <div class="grid-2">
+        <div class="field-item">
+          <span class="field-label">ชื่อ-นามสกุล:</span>
+          <span class="field-val" id="valFullName">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">เลขประจำตัวประชาชน (13 หลัก):</span>
+          <span class="field-val" id="valNationalId">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">วันเกิด:</span>
+          <span class="field-val" id="valDob">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">เพศ:</span>
+          <span class="field-val" id="valGender">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">เบอร์โทรศัพท์:</span>
+          <span class="field-val" id="valPhone">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">อีเมล:</span>
+          <span class="field-val" id="valEmail">-</span>
+        </div>
+        <div class="field-item" style="grid-column: 1 / -1;">
+          <span class="field-label">ที่อยู่ตามทะเบียนบ้าน:</span>
+          <span class="field-val" id="valAddress">-</span>
+        </div>
+      </div>
+
+      <!-- 2. ข้อมูลการศึกษา -->
+      <div class="section-title">🎓 2. ข้อมูลการศึกษา (Academic Background)</div>
+      <div class="grid-2">
+        <div class="field-item">
+          <span class="field-label">โรงเรียนที่สำเร็จการศึกษา:</span>
+          <span class="field-val" id="valSchool">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">เกรดเฉลี่ยสะสม (GPAX):</span>
+          <span class="field-val" id="valGpax">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">จังหวัดที่ตั้งโรงเรียน:</span>
+          <span class="field-val" id="valProvince">-</span>
+        </div>
+      </div>
+
+      <!-- 3. ข้อมูลการสมัคร -->
+      <div class="section-title">📝 3. ข้อมูลการสมัคร (Application Details)</div>
+      <div class="grid-2">
+        <div class="field-item">
+          <span class="field-label">สาขาวิชาที่สมัคร:</span>
+          <span class="field-val" id="valProgram">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">รอบการรับสมัคร:</span>
+          <span class="field-val" id="valRound">-</span>
+        </div>
+        <div class="field-item">
+          <span class="field-label">ปีการศึกษา:</span>
+          <span class="field-val" id="valYear">-</span>
+        </div>
+      </div>
+
+      <!-- 4. เอกสารผู้สมัคร -->
+      <div class="section-title">📁 4. เอกสารประกอบการสมัคร (Private Documents)</div>
+      <div id="docListContainer">
+        <p style="color:#64748b;font-size:0.9rem;">กำลังตรวจสอบเอกสารในระบบจัดเก็บข้อมูลส่วนบุคคล...</p>
+      </div>
+
+      <!-- 5. หมายเหตุ & การปรับสถานะ -->
+      <div class="section-title">✍️ 5. หมายเหตุเจ้าหน้าที่และการเปลี่ยนสถานะ (Staff Review)</div>
+      <form id="updateForm">
+        <div class="grid-2">
+          <div>
+            <label class="field-label" for="updateStatus">สถานะการคัดเลือก:</label>
+            <select id="updateStatus" class="status-select">
+              <option value="PENDING">รอตรวจสอบ (PENDING)</option>
+              <option value="REQUIRES_DOCS">เอกสารไม่ครบ (REQUIRES_DOCS)</option>
+              <option value="VERIFIED">ตรวจสอบแล้ว (VERIFIED)</option>
+              <option value="APPROVED">ผ่านการพิจารณา (APPROVED)</option>
+              <option value="REJECTED">ไม่ผ่านการพิจารณา (REJECTED)</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="updateNotes">หมายเหตุ / เหตุผลที่แจ้งผู้สมัคร:</label>
+            <textarea id="updateNotes" class="notes-textarea" placeholder="บันทึกข้อความภายในหรือคำแนะนำสำหรับผู้สมัคร"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-save" id="saveBtn">💾 บันทึกการเปลี่ยนแปลง</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Extract application ID from URL path: e.g. /admin/applications/RERU-69-0001
+    const pathParts = window.location.pathname.split('/');
+    const appId = pathParts[pathParts.length - 1];
+    let isUnmasked = false;
+
+    async function loadDetail(reveal = false) {
+      try {
+        const res = await fetch(`/api/admin/applications/${appId}?reveal=${reveal}`);
+        if (!res.ok) {
+          if (res.status === 401) window.location.href = '/admin/login';
+          throw new Error('ไม่สามารถเข้าถึงข้อมูลผู้สมัครได้');
+        }
+        const data = await res.json();
+        const a = data.application;
+
+        document.getElementById('appId').textContent = a.id;
+        document.getElementById('appCreated').textContent = `วันที่ยื่นใบสมัคร: ${new Date(a.created_at).toLocaleString('th-TH')}`;
+        
+        document.getElementById('valFullName').textContent = a.full_name;
+        document.getElementById('valNationalId').textContent = a.national_id;
+        document.getElementById('valDob').textContent = a.dob;
+        document.getElementById('valGender').textContent = a.gender || '-';
+        document.getElementById('valPhone').textContent = a.phone;
+        document.getElementById('valEmail').textContent = a.email;
+        document.getElementById('valAddress').textContent = a.address;
+
+        document.getElementById('valSchool').textContent = a.school_name;
+        document.getElementById('valGpax').textContent = a.gpax.toFixed(2);
+        document.getElementById('valProvince').textContent = a.province;
+
+        document.getElementById('valProgram').textContent = `${a.program_name} (${a.program_code})`;
+        document.getElementById('valRound').textContent = a.admission_round;
+        document.getElementById('valYear').textContent = a.academic_year;
+
+        const badge = document.getElementById('statusBadge');
+        badge.className = `status-badge status-${a.status}`;
+        badge.textContent = a.status;
+
+        document.getElementById('updateStatus').value = a.status;
+        document.getElementById('updateNotes').value = a.staff_notes || '';
+
+        const unmaskBtn = document.getElementById('unmaskBtn');
+        if (data.can_unmask) {
+          unmaskBtn.style.display = 'inline-flex';
+          unmaskBtn.textContent = reveal ? '🔒 ซ่อนข้อมูล (Mask)' : '👁️ แสดงข้อมูลเต็ม (Unmask)';
+          isUnmasked = reveal;
+        } else {
+          unmaskBtn.style.display = 'none';
+        }
+
+        loadDocuments();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadDocuments() {
+      const container = document.getElementById('docListContainer');
+      try {
+        const res = await fetch(`/api/admin/applications/${appId}/documents`);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          container.innerHTML = '<p style="color:#ef4444;font-size:0.9rem;">ไม่มีสิทธิ์เข้าถึงเอกสารผู้สมัคร</p>';
+          return;
+        }
+
+        const docs = data.documents || [];
+        if (docs.length === 0) {
+          container.innerHTML = '<p style="color:#64748b;font-size:0.9rem;">ผู้สมัครยังไม่ได้แนบเอกสารในระบบ</p>';
+          return;
+        }
+
+        const typeLabels = {
+          'id_card': '🪪 สำเนาบัตรประจำตัวประชาชน',
+          'transcript': '📑 ใบแสดงผลการเรียน (ปพ.1)',
+          'photo': '👤 รูปถ่ายหน้าตรง',
+          'portfolio': '🎨 แฟ้มสะสมผลงาน (Portfolio)'
+        };
+
+        container.innerHTML = docs.map(d => `
+          <div class="doc-item">
+            <div>
+              <strong>${typeLabels[d.doc_type] || d.doc_type}</strong>
+              <div style="font-size:0.75rem;color:#64748b;">${d.file_name} (${(d.file_size / 1024).toFixed(1)} KB)</div>
+            </div>
+            <a href="/api/admin/applications/${appId}/documents/${d.id}/download" class="btn-download">
+              ⬇️ ดาวน์โหลดอย่างปลอดภัย
+            </a>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = '<p style="color:#ef4444;font-size:0.9rem;">เกิดข้อผิดพลาดในการโหลดเอกสาร</p>';
+      }
+    }
+
+    document.getElementById('unmaskBtn').addEventListener('click', () => {
+      loadDetail(!isUnmasked);
+    });
+
+    document.getElementById('updateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('updateStatus').value;
+      const staff_notes = document.getElementById('updateNotes').value.trim();
+      const saveBtn = document.getElementById('saveBtn');
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'กำลังบันทึก...';
+
+      try {
+        const res = await fetch(`/api/admin/applications/${appId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, staff_notes })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'ไม่สามารถอัปเดตข้อมูลได้');
+        }
+        alert('อัปเดตข้อมูลผู้สมัครเรียบร้อยแล้ว');
+        loadDetail(isUnmasked);
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 บันทึกการเปลี่ยนแปลง';
+      }
+    });
+
+    loadDetail(false);
+  </script>
+</body>
+</html>
