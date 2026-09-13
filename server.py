@@ -20,6 +20,7 @@ import mimetypes
 import secrets
 import csv
 import io
+import uuid
 from datetime import datetime, timezone, timedelta
 
 from db import get_db
@@ -33,10 +34,11 @@ from security import (
     log_audit
 )
 
-PORT = 8000
-HOST = '127.0.0.1'
-COOKIE_NAME = 'reru_secure_session'
-SESSION_TIMEOUT_SECONDS = 3600
+# ดึงค่า PORT และ HOST จาก Environment เพื่อรองรับ Render Cloud และรันในเครื่อง
+PORT = int(os.environ.get('PORT', 8000))
+HOST = os.environ.get('HOST', '0.0.0.0')
+COOKIE_NAME = os.environ.get('SESSION_COOKIE_NAME', 'reru_secure_session')
+SESSION_TIMEOUT_SECONDS = int(os.environ.get('SESSION_LIFETIME_SECONDS', 3600))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STORAGE_DIR = os.path.join(BASE_DIR, 'storage', 'private_documents')
@@ -288,7 +290,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         # 9. Private Document Download (Protected Stream Controller)
-        # GET /api/admin/applications/:id/documents/:docId/download
         if '/documents/' in path and path.endswith('/download'):
             parts = path.split('/')
             app_id = parts[4]
@@ -318,32 +319,30 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
     # ==========================================================================
 
     def route_api_post(self, path: str):
-        # 1. Admin Login (Rate-limited, Argon2/PBKDF2, Generic error message)
         if path == '/api/auth/login':
             self.handle_auth_login()
             return
 
-        # 2. Admin Logout
         if path == '/api/auth/logout':
             self.handle_auth_logout()
             return
 
-        # 3. Super Admin: Create Admin User
         if path == '/api/admin/users':
             self.handle_admin_create_user()
             return
 
-        # 4. Staff Management: Create
         if path == '/api/admin/staff':
             self.handle_admin_create_staff()
             return
 
-        # 5. News & Activities: Create
         if path == '/api/admin/news-activities':
             self.handle_admin_create_news_activity()
             return
 
-        # 7. Public Application Submit
+        if path == '/api/admin/student-services':
+            self.handle_admin_create_student_service()
+            return
+
         if path == '/api/applications/submit':
             self.handle_public_submit_application()
             return
@@ -355,29 +354,21 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
     # ==========================================================================
 
     def route_api_patch(self, path: str):
-        # Admin Update Application Status & Notes
-        # PATCH /api/admin/applications/:id
         if path.startswith('/api/admin/applications/'):
             app_id = path.split('/')[-1]
             self.handle_admin_patch_application(app_id)
             return
 
-        # Staff Management: Update
-        # PATCH /api/admin/staff/:id
         if path.startswith('/api/admin/staff/'):
             staff_id = path.split('/')[-1]
             self.handle_admin_update_staff(staff_id)
             return
 
-        # News & Activities: Update
-        # PATCH /api/admin/news-activities/:id
         if path.startswith('/api/admin/news-activities/'):
             item_id = path.split('/')[-1]
             self.handle_admin_update_news_activity(item_id)
             return
 
-        # Student Services: Update
-        # PATCH /api/admin/student-services/:id
         if path.startswith('/api/admin/student-services/'):
             service_id = path.split('/')[-1]
             self.handle_admin_update_student_service(service_id)
@@ -386,29 +377,21 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         self.send_error_json(404, "API endpoint not found.")
 
     def route_api_delete(self, path: str):
-        # Admin Delete Application
-        # DELETE /api/admin/applications/:id
         if path.startswith('/api/admin/applications/'):
             app_id = path.split('/')[-1]
             self.handle_admin_delete_application(app_id)
             return
 
-        # Staff Management: Delete
-        # DELETE /api/admin/staff/:id
         if path.startswith('/api/admin/staff/'):
             staff_id = path.split('/')[-1]
             self.handle_admin_delete_staff(staff_id)
             return
 
-        # News & Activities: Delete
-        # DELETE /api/admin/news-activities/:id
         if path.startswith('/api/admin/news-activities/'):
             item_id = path.split('/')[-1]
             self.handle_admin_delete_news_activity(item_id)
             return
 
-        # Student Services: Delete
-        # DELETE /api/admin/student-services/:id
         if path.startswith('/api/admin/student-services/'):
             service_id = path.split('/')[-1]
             self.handle_admin_delete_student_service(service_id)
@@ -426,7 +409,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         username = data.get('username', '').strip()
         password = data.get('password', '').strip()
 
-        # Rate Limit check
         rate_key = f"{ip}:{username}" if username else ip
         if not check_login_rate_limit(rate_key, max_attempts=5, window_seconds=300):
             log_audit(username or 'ANONYMOUS', 'GUEST', 'LOGIN_LOCKOUT', 'AUTH', None, 'Rate limit exceeded. Temporary lockout.', ip, self.headers.get('User-Agent'))
@@ -446,7 +428,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
             record_login_attempt(rate_key, success=False)
             log_audit(username, 'GUEST', 'LOGIN_FAILURE', 'AUTH', None, 'User not found or inactive.', ip, self.headers.get('User-Agent'))
             conn.close()
-            # Generic error message to prevent account enumeration
             self.send_error_json(401, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
             return
 
@@ -457,7 +438,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error_json(401, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
             return
 
-        # Login successful!
         record_login_attempt(rate_key, success=True)
 
         session_id = secrets.token_hex(32)
@@ -472,7 +452,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         cursor.execute("UPDATE users SET last_login_at = ? WHERE id = ?", (now.isoformat(), user['id']))
         conn.commit()
 
-        # Audit Log
         log_audit(user['id'], user['role_id'], 'LOGIN_SUCCESS', 'AUTH', user['id'], 'User logged in successfully.', ip, self.headers.get('User-Agent'))
         conn.close()
 
@@ -526,19 +505,10 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     # ==========================================================================
-    # Implementation Details: Applicant Self-Check (Anti-IDOR & Privacy Protected)
+    # Implementation Details: Applicant Self-Check
     # ==========================================================================
 
     def handle_applicant_check_status(self, query: dict):
-        """
-        Applicant verification requires 2 factors:
-        1. Application ID (e.g. RERU-69-0001)
-        2. Date of Birth (YYYY-MM-DD)
-        
-        Strict Privacy Constraints:
-        - NEVER returns national ID, full address, or raw private documents!
-        - Returns only: Application ID, Masked Name, Program, Round, Status, Staff Note summary.
-        """
         app_id = query.get('application_id', [''])[0].strip()
         dob = query.get('dob', [''])[0].strip()
         ip = self.get_client_ip()
@@ -563,11 +533,9 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error_json(404, "ไม่พบข้อมูลการสมัคร หรือข้อมูลยืนยันตัวตนไม่ถูกต้อง")
             return
 
-        # Log successful self-check
         log_audit('APPLICANT', 'APPLICANT', 'CHECK_STATUS_SUCCESS', 'APPLICATION', app_id, 'Applicant verified identity and checked status.', ip, self.headers.get('User-Agent'))
 
         data = dict(row)
-        # Apply strict masking to applicant's own preview on public verification screen
         data['full_name'] = mask_name(data['full_name'])
 
         self.send_json(200, {
@@ -580,10 +548,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
     # ==========================================================================
 
     def handle_admin_stats(self):
-        """
-        Privacy First: Returns aggregate counts only!
-        NO names, NO emails, NO phone numbers, NO national IDs.
-        """
         user = self.get_authenticated_user()
         if not user or 'application.view' not in user['permissions']:
             self.send_error_json(403, "ไม่มีสิทธิ์เข้าถึงข้อมูลสถิติผู้สมัคร")
@@ -622,10 +586,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     def handle_admin_list_applications(self, query: dict):
-        """
-        Admin lists applications.
-        All PII is MASKED by default to prevent incidental data exposure.
-        """
         user = self.get_authenticated_user()
         if not user or 'application.view' not in user['permissions']:
             self.send_error_json(403, "ไม่มีสิทธิ์เข้าถึงรายชื่อผู้สมัคร (Permission Denied)")
@@ -662,13 +622,11 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         rows = cursor.fetchall()
         conn.close()
 
-        # Mask PII in table list
         masked_list = []
         for r in rows:
             app_dict = dict(r)
             masked_list.append(mask_application_dict(app_dict, allow_sensitive=False))
 
-        # Audit log for viewing the list
         log_audit(user['id'], user['role_id'], 'VIEW_APPLICATIONS_LIST', 'APPLICATION', 'LIST', f"Viewed list with {len(masked_list)} records.", self.get_client_ip(), self.headers.get('User-Agent'))
 
         self.send_json(200, {
@@ -678,11 +636,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     def handle_admin_get_application(self, app_id: str, query: dict):
-        """
-        View single application.
-        If 'reveal=true' query is passed, checks 'application.view_sensitive' permission.
-        Logs every sensitive view event in Audit Log.
-        """
         user = self.get_authenticated_user()
         if not user or 'application.view' not in user['permissions']:
             self.send_error_json(403, "ไม่มีสิทธิ์เข้าถึงข้อมูลผู้สมัคร (Permission Denied)")
@@ -709,7 +662,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
 
         processed = mask_application_dict(app_dict, allow_sensitive=can_view_sensitive)
 
-        # Audit Log
         action_name = 'VIEW_APPLICATION_UNMASKED' if can_view_sensitive else 'VIEW_APPLICATION'
         log_audit(user['id'], user['role_id'], action_name, 'APPLICATION', app_id, f"Viewed application details (unmasked={can_view_sensitive})", self.get_client_ip(), self.headers.get('User-Agent'))
 
@@ -720,7 +672,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     def handle_admin_patch_application(self, app_id: str):
-        """Update application status or staff notes."""
         user = self.get_authenticated_user()
         if not user:
             self.send_error_json(401, "กรุณาเข้าสู่ระบบ")
@@ -768,7 +719,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         cursor.execute(sql, params)
         conn.commit()
 
-        # Audit Log
         changes_desc = f"Status: {existing['status']} -> {new_status or existing['status']}; Notes updated."
         log_audit(user['id'], user['role_id'], 'UPDATE_APPLICATION', 'APPLICATION', app_id, changes_desc, self.get_client_ip(), self.headers.get('User-Agent'))
         conn.close()
@@ -779,10 +729,8 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     def handle_admin_delete_application(self, app_id: str):
-        """Admin delete application and associated documents."""
         user = self.get_authenticated_user()
         if not user or 'application.delete' not in user['permissions']:
-            # Fallback to checking role if permission not explicitly set
             if not user or user.get('role_id') not in ['SUPER_ADMIN', 'ADMIN']:
                 self.send_error_json(403, "คุณไม่มีสิทธิ์ลบข้อมูลผู้สมัคร (Permission Denied)")
                 return
@@ -797,7 +745,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error_json(404, "ไม่พบข้อมูลใบสมัครที่ต้องการลบ")
             return
 
-        # Delete documents
         cursor.execute("SELECT storage_path FROM documents WHERE application_id = ?", (app_id,))
         docs = cursor.fetchall()
         for d in docs:
@@ -820,7 +767,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     def handle_public_submit_application(self):
-        """Public application submission with document upload handling."""
         body = self.read_json_body() or {}
         
         prefix = body.get('prefix', 'นาย').strip()
@@ -850,7 +796,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         program_code = body.get('program_code', '').strip().upper()
         admission_round = body.get('admission_round', 'รอบที่ 2 (โควตา)').strip()
 
-        # Input validation for required fields (*)
         if not first_name and not full_name:
             self.send_error_json(400, "กรุณากรอกชื่อ")
             return
@@ -886,7 +831,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         conn = get_db()
         cursor = conn.cursor()
 
-        # Generate unique auto ID: RERU-AD-000001
         cursor.execute("SELECT id FROM applications WHERE id LIKE 'RERU-AD-%' ORDER BY id DESC LIMIT 1")
         last_row = cursor.fetchone()
         if last_row:
@@ -916,7 +860,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
             now_str, now_str
         ))
 
-        # Handle uploaded documents if present (base64 encoded objects)
         documents = body.get('documents', [])
         saved_docs = []
 
@@ -925,7 +868,7 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
             os.makedirs(storage_dir, exist_ok=True)
 
             for doc in documents:
-                doc_type = doc.get('type', 'other') # photo, transcript, other
+                doc_type = doc.get('type', 'other')
                 file_name = doc.get('name', 'document.file')
                 file_data_b64 = doc.get('data', '')
                 mime_type = doc.get('mime', 'application/octet-stream')
@@ -955,7 +898,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
 
         conn.commit()
 
-        # Log audit
         log_audit('APPLICANT', 'APPLICANT', 'SUBMIT_APPLICATION', 'APPLICATION', app_id, f"Submitted application for {program_name}", self.get_client_ip(), self.headers.get('User-Agent'))
         conn.close()
 
@@ -979,7 +921,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
     # ==========================================================================
 
     def handle_admin_get_documents(self, app_id: str):
-        """List documents for an application."""
         user = self.get_authenticated_user()
         if not user or 'application.document_view' not in user['permissions']:
             self.send_error_json(403, "ไม่มีสิทธิ์ดูเอกสารผู้สมัคร (application.document_view)")
@@ -1003,12 +944,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     def handle_admin_download_document(self, app_id: str, doc_id: str):
-        """
-        Secure stream download of applicant document.
-        - Strict permission: application.document_download
-        - File is served directly from private storage folder, NEVER exposed as public static URL.
-        - Full audit log record created.
-        """
         user = self.get_authenticated_user()
         if not user or 'application.document_download' not in user['permissions']:
             self.send_error_json(403, "ไม่มีสิทธิ์ดาวน์โหลดเอกสารผู้สมัคร (application.document_download)")
@@ -1031,7 +966,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error_json(404, "ไฟล์เอกสารไม่พร้อมใช้งานในระบบจัดเก็บข้อมูลส่วนตัว")
             return
 
-        # Audit Log
         log_audit(user['id'], user['role_id'], 'DOWNLOAD_DOCUMENT', 'DOCUMENT', doc_id, f"Downloaded {doc['file_name']} for {app_id}", self.get_client_ip(), self.headers.get('User-Agent'))
 
         try:
@@ -1054,13 +988,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
     # ==========================================================================
 
     def handle_admin_export_applications(self, query: dict):
-        """
-        Export applications as CSV.
-        - Checks 'application.export' permission
-        - Sensitive fields (national ID, phone, email) masked unless authorized
-        - NEVER exports passwords or system secrets
-        - Creates an immutable audit log record
-        """
         user = self.get_authenticated_user()
         if not user or 'application.export' not in user['permissions']:
             self.send_error_json(403, "คุณไม่มีสิทธิ์ส่งออกข้อมูลผู้สมัคร (application.export)")
@@ -1077,7 +1004,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         rows = cursor.fetchall()
         conn.close()
 
-        # Audit Log
         log_audit(user['id'], user['role_id'], 'EXPORT_APPLICATIONS', 'APPLICATION', 'ALL', f"Exported {len(rows)} application records to CSV.", self.get_client_ip(), self.headers.get('User-Agent'))
 
         output = io.StringIO()
@@ -1101,7 +1027,7 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
                 d.get('staff_notes', ''), d['created_at']
             ])
 
-        csv_content = "\ufeff" + output.getvalue()  # UTF-8 BOM for Thai Excel support
+        csv_content = "\ufeff" + output.getvalue()
         csv_bytes = csv_content.encode('utf-8')
 
         self.send_response(200)
@@ -1113,7 +1039,7 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(csv_bytes)
 
     # ==========================================================================
-    # Implementation Details: Super Admin Only (Audit & User Management)
+    # Implementation Details: Super Admin Only
     # ==========================================================================
 
     def handle_admin_get_audit_logs(self, query: dict):
@@ -1202,7 +1128,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         """, (new_uid, username, email, pwd_hash, full_name, role_id, now_str))
         conn.commit()
 
-        # Audit Log
         log_audit(user['id'], user['role_id'], 'CREATE_ADMIN_USER', 'USER', new_uid, f"Created new {role_id} account '{username}'", self.get_client_ip(), self.headers.get('User-Agent'))
         conn.close()
 
@@ -1390,7 +1315,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     def handle_get_programs(self):
-        """Public Programs list."""
         self.send_json(200, {
             'success': True,
             'programs': [
@@ -1430,7 +1354,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         items = []
         for r in rows:
             d = dict(r)
-            # Normalize category to activity/news
             if d['category'] == 'FEATURED_ACTIVITY':
                 d['category'] = 'activity'
             elif d['category'] == 'LATEST_NEWS':
@@ -1444,7 +1367,6 @@ class SecureAdmissionsHandler(http.server.SimpleHTTPRequestHandler):
         })
 
     def handle_admin_get_news_activities(self, query: dict):
-        # Admin can view all including inactive
         query['include_inactive'] = ['true']
         self.handle_get_news_activities(query)
 
